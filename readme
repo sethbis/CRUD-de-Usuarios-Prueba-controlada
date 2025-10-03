@@ -1,0 +1,51 @@
+# Práctica: CRUD de Usuarios + Prueba controlada de Fuerza Bruta (FastAPI)
+
+**Resumen**  
+Implementación de un CRUD básico de usuarios con FastAPI y un script de fuerza bruta (bash + Python) que prueba credenciales contra `POST /login`. **Solo en entorno local / laboratorio.** No atacar sistemas ajenos.
+
+---
+
+## Estructura recomendada
+.
+├─ main.py # tu API FastAPI
+├─ brute_api_bruteforce.sh # script bash + python para el brute (ejecutable)
+├─ README.md # este archivo
+
+yaml
+Copiar código
+
+---
+
+## Requisitos
+- Python 3.8+
+- pip install fastapi uvicorn (y opcionalmente sqlmodel)
+- bash, curl
+- (Opcional) jq para ver JSON bonito
+- Dar permiso: `chmod +x brute_api_bruteforce.sh`
+
+Instalación rápida:
+```bash
+pip install fastapi uvicorn sqlmodel
+Levantar la API (local)
+En la carpeta donde está main.py:
+
+bash
+Copiar código
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+API disponible en http://127.0.0.1:8000.
+
+Endpoints (resumen)
+POST /users — crear usuario (JSON: nombre_usuario, contrasena, email).
+
+GET /users — listar usuarios.
+
+GET /users/{id} — obtener usuario.
+
+PUT /users/{id} — actualizar (no contraseña).
+
+DELETE /users/{id} — eliminar usuario.
+
+POST /login — autenticar (JSON: nombre_usuario, contrasena). Responde {"mensaje":"Login correcto", ...} o {"mensaje":"Credenciales inválidas"}.
+
+##para ejectuar el bruteforce se debe hacer el siguiente comando en un entorno virtual creado en git bash
+./launcher.sh
