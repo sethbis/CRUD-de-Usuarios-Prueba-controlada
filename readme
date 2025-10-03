@@ -1,51 +1,70 @@
-# Práctica: CRUD de Usuarios + Prueba controlada de Fuerza Bruta (FastAPI)
+1. Ejecutar la API
+La API corre en http://localhost:8000. Usa Swagger UI en /docs para pruebas interactivas.
 
-**Resumen**  
-Implementación de un CRUD básico de usuarios con FastAPI y un script de fuerza bruta (bash + Python) que prueba credenciales contra `POST /login`. **Solo en entorno local / laboratorio.** No atacar sistemas ajenos.
+En PowerShell (con venv activado):
 
----
+powershell
 
-## Estructura recomendada
-.
-├─ main.py # tu API FastAPI
-├─ brute_api_bruteforce.sh # script bash + python para el brute (ejecutable)
-├─ README.md # este archivo
+Run
+Copy code
+uvicorn main:app --host 127.0.0.1 --port 8000 --reload --log-level info
+--reload: Recarga en cambios de código.
+--log-level info: Muestra requests (cambia a warning para menos verbose).
+Logs esperados: "Uvicorn running on http://127.0.0.1:8000", "Application startup complete."
+Si error de puerto: netstat -ano | findstr :8000 y taskkill /PID <PID> /F.
+Pruebas manuales (en navegador o Swagger):
 
-yaml
-Copiar código
+Abre http://localhost:8000/docs (UI interactiva).
+Endpoints CRUD:
+POST /users: Crea usuario. Ej. {"nombre_usuario": "test", "contrasena": "pass123", "email": "test@email.com", "is_active": true} → Respuesta: {"mensaje": "Usuario creado", "id": 4}.
+GET /users: Lista todos (JSON array de usuarios).
+GET /users/{id}: Obtiene uno (ej. /users/1 → Detalles de "admin").
+PUT /users/{id}: Actualiza (ej. PUT /users/1: {"nombre_usuario": "admin2", "email": "new@email.com"} → No cambia contraseña).
+DELETE /users/{id}: Elimina (ej. DELETE /users/1 → {"mensaje": "Usuario eliminado"}).
+POST /login: Autentica. Ej. {"nombre_usuario": "admin", "contrasena": "123"} → {"mensaje": "Login correcto", "usuario": "admin"}. Fallo: {"mensaje": "Credenciales inválidas"}.
+Raíz: http://localhost:8000/ → {"Hello":"World"}.
+Detener API: Ctrl+C en PowerShell.
 
----
+2. Ejecutar el Ataque de Fuerza Bruta (Controlado)
+Simula un ataque contra /login para usuario "admin" (contraseña "123"). Configurable vía launcher.sh.
 
-## Requisitos
-- Python 3.8+
-- pip install fastapi uvicorn (y opcionalmente sqlmodel)
-- bash, curl
-- (Opcional) jq para ver JSON bonito
-- Dar permiso: `chmod +x brute_api_bruteforce.sh`
+Asegúrate de que la API esté corriendo (Paso 1).
 
-Instalación rápida:
-```bash
-pip install fastapi uvicorn sqlmodel
-Levantar la API (local)
-En la carpeta donde está main.py:
+En Git Bash (nuevo terminal, con venv activado):
 
 bash
-Copiar código
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
-API disponible en http://127.0.0.1:8000.
 
-Endpoints (resumen)
-POST /users — crear usuario (JSON: nombre_usuario, contrasena, email).
-
-GET /users — listar usuarios.
-
-GET /users/{id} — obtener usuario.
-
-PUT /users/{id} — actualizar (no contraseña).
-
-DELETE /users/{id} — eliminar usuario.
-
-POST /login — autenticar (JSON: nombre_usuario, contrasena). Responde {"mensaje":"Login correcto", ...} o {"mensaje":"Credenciales inválidas"}.
-
-##para ejectuar el bruteforce se debe hacer el siguiente comando en un entorno virtual creado en git bash
+Run
+Copy code
+cd /c/Users/nicol/Documents/cyber/parcial  # Ajusta tu ruta (C:\ es /c/)
+chmod +x launcher.sh  # Hace ejecutable (opcional en Windows)
+source venv/Scripts/activate  # Activa venv
 ./launcher.sh
+Pausa: Presiona Enter (confirma API corriendo).
+Configuración por defecto: Usuario "admin", max_length=3, charset=letras+números+símbolos.
+Progreso: "Probando longitud 1...", etc. Encuentra "123" en longitud 3.
+Output ejemplo: "¡CONTRASEÑA ENCONTRADA! '123' en 234 intentos. Tiempo: 15.2s".
+En PowerShell (API): Logs de POST /login (200 OK para cada intento).
+Personalizar:
+
+Edita launcher.sh (Bloc de notas o nano launcher.sh):
+TARGET_USER="a" (prueba usuario "a" / "g1").
+MAX_LENGTH=2 (pruebas rápidas, no encuentra "123").
+Edita bruteforce.py para optimizar:
+CHARS = string.digits (solo números: encuentra "123" en ~234 intentos, <20s).
+DELAY = 0 (sin pausa entre requests, más rápido).
+Agrega verbose: Después de attempts += 1, if attempts % 10 == 0: print(f"Progreso: {attempts} intentos").
+Guarda y re-ejecuta ./launcher.sh.
+Detener ataque: Ctrl+C en Git Bash.
+
+## ejemplo del una salida 
+Entorno virtual activado.
+Iniciando ataque de fuerza bruta contra username: admin
+Charset: 0123456789
+Generando contraseñas de longitud 1 a 3...
+Probando longitud 1...
+Probando longitud 2...
+Probando longitud 3...
+¡CONTRASEÑA ENCONTRADA! '123' en 234 intentos. Tiempo: 476.21s
+Ataque terminado. Tiempo total aproximado: 0s
+Presiona Enter para salir...
